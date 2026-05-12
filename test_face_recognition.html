@@ -8,162 +8,208 @@
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
-    --bg: #0e0f11; --surface: #16181c; --surface2: #1e2026;
-    --border: rgba(255,255,255,0.08); --border-active: rgba(255,255,255,0.2);
-    --text: #f0f0f0; --muted: #7a7d85; --accent: #4ade80;
-    --accent-dim: rgba(74,222,128,0.12); --danger: #f87171;
-    --danger-dim: rgba(248,113,113,0.12); --info: #60a5fa;
-    --mono: 'DM Mono', monospace; --sans: 'Sora', sans-serif;
+    --bg:#0e0f11; --surface:#16181c; --border:rgba(255,255,255,0.08);
+    --border-active:rgba(255,255,255,0.2); --text:#f0f0f0; --muted:#7a7d85;
+    --accent:#4ade80; --accent-dim:rgba(74,222,128,0.12);
+    --danger:#f87171; --danger-dim:rgba(248,113,113,0.12);
+    --warn:#fbbf24; --warn-dim:rgba(251,191,36,0.12);
+    --info:#60a5fa; --mono:'DM Mono',monospace; --sans:'Sora',sans-serif;
   }
-  body { background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 14px; min-height: 100vh; padding: 40px 20px; }
-  .container { max-width: 760px; margin: 0 auto; }
-  header { margin-bottom: 40px; }
-  header h1 { font-size: 22px; font-weight: 600; letter-spacing: -0.5px; margin-bottom: 6px; }
-  header p { color: var(--muted); font-size: 13px; }
-  .api-bar { display: flex; align-items: center; gap: 10px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; margin-bottom: 32px; }
-  .api-bar label { color: var(--muted); font-size: 12px; font-family: var(--mono); white-space: nowrap; }
-  .api-bar input { flex: 1; background: transparent; border: none; outline: none; color: var(--text); font-family: var(--mono); font-size: 13px; }
-  .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); flex-shrink: 0; }
-  .status-dot.live { background: var(--accent); animation: pulse 2s infinite; }
-  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
-  .steps { display: flex; flex-direction: column; gap: 24px; }
-  .step { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; transition: border-color 0.2s; }
-  .step.active { border-color: var(--border-active); }
-  .step-header { display: flex; align-items: center; gap: 14px; padding: 18px 20px; border-bottom: 1px solid var(--border); }
-  .step-num { width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--border-active); display: flex; align-items: center; justify-content: center; font-size: 12px; font-family: var(--mono); color: var(--muted); flex-shrink: 0; }
-  .step.active .step-num { border-color: var(--accent); color: var(--accent); }
-  .step.done .step-num { background: var(--accent); border-color: var(--accent); color: #000; }
-  .step-title { font-weight: 500; font-size: 14px; }
-  .step-sub { color: var(--muted); font-size: 12px; margin-top: 2px; }
-  .step-body { padding: 20px; }
-  .upload-zone { border: 1px dashed var(--border-active); border-radius: 10px; padding: 28px; text-align: center; cursor: pointer; transition: background 0.2s, border-color 0.2s; }
-  .upload-zone:hover { background: rgba(255,255,255,0.03); border-color: rgba(255,255,255,0.3); }
-  .upload-zone input { display: none; }
-  .upload-zone .uz-icon { width: 36px; height: 36px; border: 1px solid var(--border-active); border-radius: 8px; margin: 0 auto 12px; display: flex; align-items: center; justify-content: center; }
-  .upload-zone p { color: var(--muted); font-size: 13px; }
-  .upload-zone span { color: var(--text); font-weight: 500; }
-  .preview-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
-  .preview-item { position: relative; width: 90px; height: 90px; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); }
-  .preview-item img { width: 100%; height: 100%; object-fit: cover; }
-  .preview-item .remove-btn { position: absolute; top: 4px; right: 4px; width: 20px; height: 20px; background: rgba(0,0,0,0.7); border: none; border-radius: 50%; color: #fff; cursor: pointer; font-size: 12px; display: flex; align-items: center; justify-content: center; line-height: 1; }
-  .img-count { font-size: 12px; color: var(--muted); margin-top: 8px; }
-  .img-count span { color: var(--accent); font-family: var(--mono); }
-  .camera-wrap { border-radius: 10px; overflow: hidden; background: #000; position: relative; margin-bottom: 14px; }
-  #camera-feed { width: 100%; max-height: 320px; object-fit: cover; display: block; }
-  .camera-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 180px; height: 220px; border: 2px solid rgba(74,222,128,0.5); border-radius: 50%; pointer-events: none; }
-  .camera-hint { position: absolute; bottom: 12px; left: 0; right: 0; text-align: center; font-size: 12px; color: rgba(255,255,255,0.6); font-family: var(--mono); }
-  .angle-pills { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
-  .angle-pill { padding: 5px 12px; border-radius: 20px; border: 1px solid var(--border); font-size: 12px; color: var(--muted); font-family: var(--mono); transition: all 0.2s; }
-  .angle-pill.captured { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
-  .angle-pill.current { border-color: var(--info); color: var(--info); background: rgba(96,165,250,0.1); animation: blink 1s infinite; }
-  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.6} }
-  .cam-controls { display: flex; gap: 10px; align-items: center; }
-  .btn { padding: 10px 20px; border-radius: 8px; border: 1px solid var(--border-active); background: transparent; color: var(--text); font-family: var(--sans); font-size: 13px; font-weight: 500; cursor: pointer; transition: background 0.15s, transform 0.1s; }
-  .btn:hover { background: rgba(255,255,255,0.06); }
-  .btn:active { transform: scale(0.98); }
-  .btn.primary { background: var(--accent); color: #000; border-color: var(--accent); }
-  .btn.primary:hover { background: #22c55e; }
-  .btn.danger-btn { border-color: var(--danger); color: var(--danger); }
-  .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
-  .submit-row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
-  .submit-status { font-size: 12px; color: var(--muted); font-family: var(--mono); }
-  .result-box { border-radius: 12px; padding: 24px; border: 1px solid var(--border); margin-top: 24px; display: none; }
-  .result-box.verified { border-color: var(--accent); background: var(--accent-dim); }
-  .result-box.rejected { border-color: var(--danger); background: var(--danger-dim); }
-  .result-verdict { font-size: 28px; font-weight: 600; letter-spacing: -1px; margin-bottom: 6px; }
-  .result-box.verified .result-verdict { color: var(--accent); }
-  .result-box.rejected .result-verdict { color: var(--danger); }
-  .result-msg { color: var(--muted); font-size: 13px; margin-bottom: 20px; }
-  .result-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
-  .stat-card { background: rgba(255,255,255,0.04); border-radius: 8px; padding: 12px 14px; }
-  .stat-label { font-size: 11px; color: var(--muted); font-family: var(--mono); margin-bottom: 4px; }
-  .stat-value { font-size: 20px; font-weight: 600; font-family: var(--mono); }
-  .pairs-title { font-size: 12px; color: var(--muted); font-family: var(--mono); margin-bottom: 10px; }
-  .pair-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-top: 1px solid var(--border); font-size: 12px; font-family: var(--mono); }
-  .pair-badge { padding: 2px 8px; border-radius: 4px; font-size: 11px; }
-  .pair-badge.match { background: var(--accent-dim); color: var(--accent); }
-  .pair-badge.no-match { background: var(--danger-dim); color: var(--danger); }
-  .pair-info { color: var(--muted); flex: 1; }
-  .pair-score { color: var(--text); margin-left: auto; }
-  .loading-bar { height: 2px; background: var(--border); border-radius: 2px; overflow: hidden; margin-top: 14px; display: none; }
-  .loading-bar.show { display: block; }
-  .loading-bar-inner { height: 100%; background: var(--accent); width: 0%; animation: load 2.5s ease-in-out infinite; }
+  body { background:var(--bg); color:var(--text); font-family:var(--sans); font-size:14px; min-height:100vh; padding:40px 20px; }
+  .container { max-width:760px; margin:0 auto; }
+  header { margin-bottom:32px; }
+  header h1 { font-size:22px; font-weight:600; letter-spacing:-0.5px; margin-bottom:6px; }
+  header p { color:var(--muted); font-size:13px; }
+  .api-bar { display:flex; align-items:center; gap:10px; background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:10px 14px; margin-bottom:14px; }
+  .api-bar label { color:var(--muted); font-size:12px; font-family:var(--mono); white-space:nowrap; }
+  .api-bar input { flex:1; background:transparent; border:none; outline:none; color:var(--text); font-family:var(--mono); font-size:13px; }
+  .steps { display:flex; flex-direction:column; gap:24px; margin-top:18px; }
+  .step { background:var(--surface); border:1px solid var(--border); border-radius:14px; overflow:hidden; transition:border-color 0.2s; }
+  .step.active { border-color:var(--border-active); }
+  .step.done   { border-color:var(--accent); }
+  .step-header { display:flex; align-items:center; gap:14px; padding:18px 20px; border-bottom:1px solid var(--border); }
+  .step-num { width:28px; height:28px; border-radius:50%; border:1px solid var(--border-active); display:flex; align-items:center; justify-content:center; font-size:12px; font-family:var(--mono); color:var(--muted); flex-shrink:0; }
+  .step.active .step-num { border-color:var(--accent); color:var(--accent); }
+  .step.done   .step-num { background:var(--accent); border-color:var(--accent); color:#000; }
+  .step-title { font-weight:500; font-size:14px; }
+  .step-sub { color:var(--muted); font-size:12px; margin-top:2px; }
+  .step-body { padding:20px; }
+  .upload-zone { border:1px dashed var(--border-active); border-radius:10px; padding:28px; text-align:center; cursor:pointer; }
+  .upload-zone:hover { background:rgba(255,255,255,0.03); }
+  .upload-zone input { display:none; }
+  .upload-zone p { color:var(--muted); font-size:13px; }
+  .upload-zone span { color:var(--text); font-weight:500; }
+  .preview-grid { display:flex; flex-wrap:wrap; gap:10px; margin-top:14px; }
+  .preview-item { position:relative; width:90px; height:90px; border-radius:8px; overflow:hidden; border:1px solid var(--border); }
+  .preview-item img { width:100%; height:100%; object-fit:cover; }
+  .preview-item .remove-btn { position:absolute; top:4px; right:4px; width:20px; height:20px; background:rgba(0,0,0,0.7); border:none; border-radius:50%; color:#fff; cursor:pointer; font-size:12px; }
+  .preview-item .angle-label { position:absolute; bottom:4px; left:4px; background:rgba(0,0,0,0.75); color:#fff; font-size:10px; padding:2px 5px; border-radius:3px; font-family:var(--mono); }
+  .img-count { font-size:12px; color:var(--muted); margin-top:8px; }
+  .img-count span { color:var(--accent); font-family:var(--mono); }
+
+  /* Camera */
+  .camera-wrap { border-radius:10px; overflow:hidden; background:#000; position:relative; margin-bottom:14px; }
+  #camera-feed { width:100%; max-height:380px; object-fit:cover; display:block; transform:scaleX(-1); }
+  .camera-svg-overlay { position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; }
+  .face-oval { fill:none; stroke-width:3; transition:stroke 0.25s; }
+  .face-oval.gray   { stroke:rgba(180,180,180,0.5); }
+  .face-oval.yellow { stroke:#fbbf24; filter:drop-shadow(0 0 6px #fbbf24); }
+  .face-oval.green  { stroke:#4ade80; filter:drop-shadow(0 0 8px #4ade80); }
+  .face-oval.red    { stroke:#f87171; filter:drop-shadow(0 0 6px #f87171); }
+  .camera-hint { position:absolute; bottom:64px; left:0; right:0; text-align:center; font-size:13px; font-family:var(--mono); padding:4px 12px; }
+  .camera-hint.gray   { color:rgba(255,255,255,0.7); }
+  .camera-hint.yellow { color:#fbbf24; }
+  .camera-hint.green  { color:#4ade80; }
+  .camera-hint.red    { color:#f87171; }
+
+  /* Live pose gauge */
+  .pose-gauge {
+    position:absolute; bottom:8px; left:8px; right:8px;
+    display:flex; gap:6px; justify-content:space-between;
+    font-family:var(--mono); font-size:11px;
+    background:rgba(0,0,0,0.55); padding:6px 10px; border-radius:8px;
+  }
+  .pose-gauge .pg-item { flex:1; text-align:center; color:#fff; }
+  .pose-gauge .pg-label { color:rgba(255,255,255,0.55); font-size:10px; letter-spacing:0.5px; }
+  .pose-gauge .pg-value { font-size:14px; font-weight:500; }
+  .pose-gauge .pg-value.ok  { color:#4ade80; }
+  .pose-gauge .pg-value.bad { color:#f87171; }
+  .pose-gauge .pg-value.na  { color:rgba(255,255,255,0.3); }  /* pitch dimmed for side slots */
+
+  /* Angle steps */
+  .angle-steps { display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap; }
+  .angle-step { display:flex; align-items:center; gap:6px; padding:6px 14px; border-radius:20px; border:1px solid var(--border); font-size:12px; font-family:var(--mono); color:var(--muted); }
+  .angle-step .dot { width:7px; height:7px; border-radius:50%; background:var(--muted); }
+  .angle-step.current { border-color:var(--warn); color:var(--warn); }
+  .angle-step.current .dot { background:var(--warn); }
+  .angle-step.ready   { border-color:var(--accent); color:var(--accent); }
+  .angle-step.ready .dot { background:var(--accent); animation:pulse 1s infinite; }
+  .angle-step.done    { border-color:var(--accent); color:var(--accent); background:var(--accent-dim); }
+  .angle-step.done .dot { background:var(--accent); }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  .cam-controls { display:flex; gap:10px; align-items:center; margin-top:14px; flex-wrap:wrap; }
+  .btn { padding:10px 20px; border-radius:8px; border:1px solid var(--border-active); background:transparent; color:var(--text); font-family:var(--sans); font-size:13px; font-weight:500; cursor:pointer; }
+  .btn:hover { background:rgba(255,255,255,0.06); }
+  .btn.primary { background:var(--accent); color:#000; border-color:var(--accent); }
+  .btn.primary:hover { background:#22c55e; }
+  .btn.primary:disabled { opacity:0.4; cursor:not-allowed; }
+  .btn.danger-btn { border-color:var(--danger); color:var(--danger); }
+  .btn:disabled { opacity:0.4; cursor:not-allowed; }
+
+  .submit-row { display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
+  .submit-status { font-size:12px; color:var(--muted); font-family:var(--mono); }
+
+  .result-box { border-radius:12px; padding:24px; border:1px solid var(--border); margin-top:24px; display:none; }
+  .result-box.verified { border-color:var(--accent); background:var(--accent-dim); }
+  .result-box.rejected { border-color:var(--danger); background:var(--danger-dim); }
+  .result-verdict { font-size:28px; font-weight:600; letter-spacing:-1px; margin-bottom:6px; }
+  .result-box.verified .result-verdict { color:var(--accent); }
+  .result-box.rejected .result-verdict { color:var(--danger); }
+  .result-msg { color:var(--muted); font-size:13px; margin-bottom:20px; }
+  .result-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:20px; }
+  .stat-card { background:rgba(255,255,255,0.04); border-radius:8px; padding:12px 14px; }
+  .stat-label { font-size:11px; color:var(--muted); font-family:var(--mono); margin-bottom:4px; }
+  .stat-value { font-size:20px; font-weight:600; font-family:var(--mono); }
+  .pairs-title { font-size:12px; color:var(--muted); font-family:var(--mono); margin-bottom:10px; }
+  .pair-row { display:flex; align-items:center; gap:10px; padding:8px 0; border-top:1px solid var(--border); font-size:12px; font-family:var(--mono); }
+  .pair-badge { padding:2px 8px; border-radius:4px; font-size:11px; }
+  .pair-badge.match    { background:var(--accent-dim); color:var(--accent); }
+  .pair-badge.no-match { background:var(--danger-dim); color:var(--danger); }
+  .pair-info { color:var(--muted); flex:1; }
+  .pair-score { color:var(--text); margin-left:auto; }
+  .loading-bar { height:2px; background:var(--border); border-radius:2px; overflow:hidden; margin-top:14px; display:none; }
+  .loading-bar.show { display:block; }
+  .loading-bar-inner { height:100%; background:var(--accent); animation:load 2.5s ease-in-out infinite; }
   @keyframes load { 0%{width:0%;margin-left:0} 50%{width:60%;margin-left:20%} 100%{width:0%;margin-left:100%} }
-  .error-box { background: var(--danger-dim); border: 1px solid var(--danger); border-radius: 10px; padding: 14px 16px; font-size: 13px; color: var(--danger); margin-top: 14px; display: none; font-family: var(--mono); }
-  canvas#snap-canvas { display: none; }
+  .error-box { background:var(--danger-dim); border:1px solid var(--danger); border-radius:10px; padding:14px 16px; font-size:13px; color:var(--danger); margin-top:14px; display:none; font-family:var(--mono); }
+  canvas#snap-canvas, canvas#pose-canvas { display:none; }
 </style>
 </head>
 <body>
 <div class="container">
   <header>
     <h1>Face Verification — Test Client</h1>
-    <p>Simulates the full dating app verification flow: gallery upload → camera selfies → API result</p>
+    <p>Gallery upload → guided angle selfies with real-time pose feedback → API result</p>
   </header>
+
   <div class="api-bar">
-    <label>API</label>
-    <!-- <input type="text" id="api-url" value="http://192.168.1.10:8000/api/v1/verify"/> -->
-    <input type="text" id="api-url" value="http://localhost:8000/api/v1/verify"/>
-    <div class="status-dot" id="status-dot"></div>
+    <label>VERIFY API</label>
+    <input type="text" id="api-url"  value="http://localhost:8000/api/v1/verify"/>
   </div>
+  <div class="api-bar">
+    <label>POSE API</label>
+    <input type="text" id="pose-url" value="http://localhost:8000/api/v1/pose"/>
+  </div>
+
   <div class="steps">
+
+    <!-- STEP 1 -->
     <div class="step active" id="step1">
       <div class="step-header">
         <div class="step-num" id="num1">1</div>
         <div>
           <div class="step-title">Upload reference images</div>
-          <div class="step-sub">Pick 1–2 clear face photos from your device (JPG / PNG)</div>
+          <div class="step-sub">Pick 1–2 clear face photos (JPG / PNG)</div>
         </div>
       </div>
       <div class="step-body">
-        <div class="upload-zone" id="ref-zone" onclick="document.getElementById('ref-input').click()">
+        <div class="upload-zone" onclick="document.getElementById('ref-input').click()">
           <input type="file" id="ref-input" accept="image/jpeg,image/png" multiple/>
-          <div class="uz-icon">
-            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
-            </svg>
-          </div>
           <p><span>Click to upload</span> or drag & drop</p>
           <p style="margin-top:4px">Max 2 images · JPG / PNG</p>
         </div>
         <div class="preview-grid" id="ref-preview"></div>
-        <p class="img-count" id="ref-count" style="display:none">
-          <span id="ref-num">0</span> / 2 reference images selected
-        </p>
+        <p class="img-count" id="ref-count" style="display:none"><span id="ref-num">0</span> / 2 reference images</p>
       </div>
     </div>
+
+    <!-- STEP 2 -->
     <div class="step" id="step2">
       <div class="step-header">
         <div class="step-num" id="num2">2</div>
         <div>
-          <div class="step-title">Capture selfies</div>
-          <div class="step-sub">Take 2–5 photos at different face angles using your camera</div>
+          <div class="step-title">Capture 4 selfies</div>
+          <div class="step-sub">The oval turns GREEN only when the backend confirms your real angle</div>
         </div>
       </div>
       <div class="step-body">
-        <div class="angle-pills" id="angle-pills">
-          <div class="angle-pill current" data-angle="0">front</div>
-          <div class="angle-pill" data-angle="1">left</div>
-          <div class="angle-pill" data-angle="2">right</div>
-          <div class="angle-pill" data-angle="3">smile</div>
-          <div class="angle-pill" data-angle="4">tilt up</div>
+
+        <div class="angle-steps" id="angle-steps">
+          <div class="angle-step current" id="astep-0"><span class="dot"></span>front</div>
+          <div class="angle-step"          id="astep-1"><span class="dot"></span>left</div>
+          <div class="angle-step"          id="astep-2"><span class="dot"></span>right</div>
+          <div class="angle-step"          id="astep-3"><span class="dot"></span>smile</div>
         </div>
+
         <div class="camera-wrap" id="camera-wrap" style="display:none">
           <video id="camera-feed" autoplay playsinline muted></video>
-          <div class="camera-overlay"></div>
-          <div class="camera-hint" id="camera-hint">align your face · front</div>
+          <svg class="camera-svg-overlay" viewBox="0 0 640 480" preserveAspectRatio="xMidYMid meet">
+            <ellipse id="face-oval" class="face-oval gray" cx="320" cy="230" rx="130" ry="170"/>
+          </svg>
+          <div class="camera-hint gray" id="camera-hint">position your face inside the oval</div>
+          <div class="pose-gauge" id="pose-gauge">
+            <div class="pg-item"><div class="pg-label">YAW</div>  <div class="pg-value" id="pg-yaw">—</div></div>
+            <div class="pg-item"><div class="pg-label">PITCH</div><div class="pg-value" id="pg-pitch">—</div></div>
+            <div class="pg-item"><div class="pg-label">ROLL</div> <div class="pg-value" id="pg-roll">—</div></div>
+          </div>
         </div>
+
         <canvas id="snap-canvas"></canvas>
+        <canvas id="pose-canvas"></canvas>
+
         <div class="preview-grid" id="selfie-preview"></div>
-        <p class="img-count" id="selfie-count" style="display:none">
-          <span id="selfie-num">0</span> / 5 selfies captured
-        </p>
-        <div class="cam-controls" style="margin-top:14px">
-          <button class="btn" id="start-cam-btn" onclick="startCamera()">Start camera</button>
-          <button class="btn primary" id="snap-btn" onclick="captureSnap()" style="display:none">Capture</button>
-          <button class="btn danger-btn" id="stop-cam-btn" onclick="stopCamera()" style="display:none">Stop camera</button>
+        <p class="img-count" id="selfie-count" style="display:none"><span id="selfie-num">0</span> / 4 selfies captured</p>
+
+        <div class="cam-controls">
+          <button class="btn"           id="start-cam-btn" onclick="startCamera()">Start camera</button>
+          <button class="btn primary"   id="snap-btn"      onclick="captureSnap()" style="display:none" disabled>Capture</button>
+          <button class="btn danger-btn" id="stop-cam-btn" onclick="stopCamera()"  style="display:none">Stop</button>
         </div>
       </div>
     </div>
+
+    <!-- STEP 3 -->
     <div class="step" id="step3">
       <div class="step-header">
         <div class="step-num" id="num3">3</div>
@@ -174,7 +220,7 @@
       </div>
       <div class="step-body">
         <div class="submit-row">
-          <button class="btn primary" id="verify-btn" onclick="runVerification()">Verify identity</button>
+          <button class="btn primary" id="verify-btn" onclick="runVerification()" disabled>Verify identity</button>
           <button class="btn" onclick="resetAll()">Reset</button>
           <span class="submit-status" id="submit-status"></span>
         </div>
@@ -184,24 +230,46 @@
           <div class="result-verdict" id="result-verdict"></div>
           <div class="result-msg" id="result-msg"></div>
           <div class="result-stats">
-            <div class="stat-card"><div class="stat-label">confidence</div><div class="stat-value" id="stat-confidence">—</div></div>
+            <div class="stat-card"><div class="stat-label">confidence</div>  <div class="stat-value" id="stat-confidence">—</div></div>
             <div class="stat-card"><div class="stat-label">matched pairs</div><div class="stat-value" id="stat-pairs">—</div></div>
-            <div class="stat-card"><div class="stat-label">match ratio</div><div class="stat-value" id="stat-ratio">—</div></div>
+            <div class="stat-card"><div class="stat-label">match ratio</div>  <div class="stat-value" id="stat-ratio">—</div></div>
           </div>
           <div class="pairs-title">pair breakdown</div>
           <div id="pair-list"></div>
         </div>
       </div>
     </div>
+
   </div>
 </div>
-<script>
-const ANGLES = ['front','left','right', 'smile', 'tilt up'];
-let refFiles = [], selfieBlobs = [], stream = null, currentAngle = 0;
 
+<script>
+// ── Config ────────────────────────────────────────────────────────────────────
+const ANGLES = ['front', 'left', 'right', 'smile'];
+const ANGLE_INSTRUCTIONS = {
+  front: 'Look straight at the camera',
+  left:  '← Turn your face to your LEFT',
+  right: '→ Turn your face to your RIGHT',
+  smile: 'Look straight and SMILE 😊',
+};
+const POSE_POLL_MS = 500;        // backend poll interval ms
+const HOLD_FRAMES_REQUIRED = 2; // consecutive OK frames before capture enabled
+
+// ── State ─────────────────────────────────────────────────────────────────────
+let refFiles       = [];
+let selfieBlobs    = [];
+let stream         = null;
+let currentAngle   = 0;
+let currentOvalState = 'gray';
+let posePollTimer  = null;
+let consecutiveOk  = 0;
+let lastPose       = null;
+
+// ── Reference image upload ────────────────────────────────────────────────────
 document.getElementById('ref-input').addEventListener('change', function(e) {
-  refFiles = Array.from(e.target.files).slice(0, 2);
-  renderRefPreviews(); updateStepStates();
+  Array.from(e.target.files).forEach(f => { if (refFiles.length < 2) refFiles.push(f); });
+  renderRefPreviews();
+  updateStepStates();
 });
 
 function renderRefPreviews() {
@@ -216,145 +284,344 @@ function renderRefPreviews() {
   document.getElementById('ref-count').style.display = refFiles.length ? 'block' : 'none';
   document.getElementById('ref-num').textContent = refFiles.length;
 }
+function removeRef(i) { refFiles.splice(i, 1); renderRefPreviews(); updateStepStates(); }
 
-function removeRef(i) { refFiles.splice(i,1); renderRefPreviews(); updateStepStates(); }
+// ── Oval / hint helpers ───────────────────────────────────────────────────────
+function setOvalState(state, hint) {
+  currentOvalState = state;
+  document.getElementById('face-oval').className = `face-oval ${state}`;
+  const h = document.getElementById('camera-hint');
+  h.className = `camera-hint ${state}`;
+  h.textContent = hint;
+  const snapBtn = document.getElementById('snap-btn');
+  if (snapBtn && snapBtn.style.display !== 'none') {
+    snapBtn.disabled = (state !== 'green');
+  }
+}
 
-const refZone = document.getElementById('ref-zone');
-refZone.addEventListener('dragover', e => { e.preventDefault(); refZone.style.background='rgba(255,255,255,0.05)'; });
-refZone.addEventListener('dragleave', () => { refZone.style.background=''; });
-refZone.addEventListener('drop', e => {
-  e.preventDefault(); refZone.style.background='';
-  refFiles = Array.from(e.dataTransfer.files).filter(f=>f.type.startsWith('image/')).slice(0,2);
-  renderRefPreviews(); updateStepStates();
-});
+// ── Pose gauge — uses nested per-slot thresholds ──────────────────────────────
+// pose.thresholds shape from backend:
+//   { front:{yaw_max,pitch_max,roll_max}, left:{yaw_min,yaw_max,roll_max},
+//     right:{yaw_min,yaw_max,roll_max},   smile:{yaw_max,pitch_max,roll_max} }
+//
+// Axes checked per slot:
+//   front / smile : yaw + pitch + roll
+//   left  / right : yaw + roll only  (pitch shown but dimmed / not judged)
 
+function updatePoseGauge(pose) {
+  const yawEl   = document.getElementById('pg-yaw');
+  const pitchEl = document.getElementById('pg-pitch');
+  const rollEl  = document.getElementById('pg-roll');
+
+  if (!pose || !pose.detected) {
+    yawEl.textContent = pitchEl.textContent = rollEl.textContent = '—';
+    yawEl.className = pitchEl.className = rollEl.className = 'pg-value';
+    return;
+  }
+
+  const slot = ANGLES[currentAngle];
+  const t    = pose.thresholds[slot]; // per-slot threshold object
+
+  yawEl.textContent   = pose.yaw.toFixed(1)   + '°';
+  pitchEl.textContent = pose.pitch.toFixed(1) + '°';
+  rollEl.textContent  = pose.roll.toFixed(1)  + '°';
+
+  // Yaw: range check for side slots, magnitude check for frontal slots
+  let yawOk;
+  if (slot === 'left')       yawOk = (pose.yaw >= t.yaw_min  && pose.yaw <=  t.yaw_max);
+  else if (slot === 'right') yawOk = (pose.yaw <= -t.yaw_min && pose.yaw >= -t.yaw_max);
+  else                       yawOk = (Math.abs(pose.yaw) <= t.yaw_max);
+
+  // Pitch: only judged for front/smile; shown as neutral (na) for side slots
+  const isSide   = (slot === 'left' || slot === 'right');
+  const pitchOk  = isSide ? null : (Math.abs(pose.pitch) <= t.pitch_max);
+
+  // Roll: checked for all slots
+  const rollOk = Math.abs(pose.roll) <= t.roll_max;
+
+  yawEl.className   = 'pg-value ' + (yawOk  ? 'ok' : 'bad');
+  pitchEl.className = 'pg-value ' + (isSide ? 'na' : (pitchOk ? 'ok' : 'bad'));
+  rollEl.className  = 'pg-value ' + (rollOk ? 'ok' : 'bad');
+}
+
+// ── Camera ────────────────────────────────────────────────────────────────────
 async function startCamera() {
   try {
-    stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
+    stream = await navigator.mediaDevices.getUserMedia({
+      video: { width: 640, height: 480, facingMode: 'user' }, audio: false
+    });
     document.getElementById('camera-feed').srcObject = stream;
     document.getElementById('camera-wrap').style.display = 'block';
     document.getElementById('start-cam-btn').style.display = 'none';
     document.getElementById('snap-btn').style.display = 'inline-flex';
     document.getElementById('stop-cam-btn').style.display = 'inline-flex';
-    updateAnglePills();
-    document.getElementById('status-dot').className = 'status-dot live';
-  } catch(err) { showError('Camera access denied. Please allow camera permission and try again.'); }
+    document.getElementById('snap-btn').disabled = true;
+    updateAngleSteps();
+    setOvalState('gray', ANGLE_INSTRUCTIONS[ANGLES[currentAngle]]);
+    document.getElementById('camera-feed').onloadeddata = () => startPosePolling();
+  } catch(err) {
+    showError('Camera access denied. Please allow camera permission and try again.');
+  }
 }
 
 function stopCamera() {
-  if (stream) { stream.getTracks().forEach(t=>t.stop()); stream=null; }
-  document.getElementById('camera-wrap').style.display='none';
-  document.getElementById('start-cam-btn').style.display='inline-flex';
-  document.getElementById('snap-btn').style.display='none';
-  document.getElementById('stop-cam-btn').style.display='none';
-  document.getElementById('status-dot').className='status-dot';
+  clearInterval(posePollTimer);
+  posePollTimer = null;
+  if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
+  document.getElementById('camera-wrap').style.display = 'none';
+  document.getElementById('start-cam-btn').style.display = 'inline-flex';
+  document.getElementById('snap-btn').style.display = 'none';
+  document.getElementById('stop-cam-btn').style.display = 'none';
+  updatePoseGauge(null);
 }
 
-function captureSnap() {
-  if (selfieBlobs.length >= 5) { showError('Maximum 5 selfies captured.'); return; }
+// ── Real-time pose polling ────────────────────────────────────────────────────
+function startPosePolling() {
+  consecutiveOk = 0;
+  clearInterval(posePollTimer);
+  posePollTimer = setInterval(pollPoseOnce, POSE_POLL_MS);
+}
+
+async function pollPoseOnce() {
+  if (!stream) return;
   const video = document.getElementById('camera-feed');
+  if (video.readyState < 2) return;
+
+  // Downsize frame to keep request light (~320 px wide)
+  const canvas   = document.getElementById('pose-canvas');
+  const targetW  = 320;
+  const targetH  = Math.round(video.videoHeight * (targetW / video.videoWidth));
+  canvas.width   = targetW;
+  canvas.height  = targetH;
+  canvas.getContext('2d').drawImage(video, 0, 0, targetW, targetH);
+
+  const blob = await new Promise(res => canvas.toBlob(res, 'image/jpeg', 0.75));
+  if (!blob) return;
+
+  const fd = new FormData();
+  fd.append('image', blob, 'frame.jpg');
+
+  try {
+    const res = await fetch(document.getElementById('pose-url').value.trim(), {
+      method: 'POST', body: fd
+    });
+    if (!res.ok) return;
+    const pose = await res.json();
+    lastPose = pose;
+    applyPose(pose);
+  } catch(_) { /* swallow network errors during polling */ }
+}
+
+function applyPose(pose) {
+  updatePoseGauge(pose);
+
+  if (!pose.detected) {
+    consecutiveOk = 0;
+    setOvalState('gray', 'No face detected — position your face inside the oval');
+    return;
+  }
+
+  const slot   = ANGLES[currentAngle];
+  const slotOk = pose.slots[slot] === true;
+
+  if (slotOk) {
+    consecutiveOk++;
+    if (consecutiveOk >= HOLD_FRAMES_REQUIRED) {
+      setOvalState('green', `Hold still — ready to capture (${slot})`);
+    } else {
+      setOvalState('yellow', `Almost — hold position (${slot})`);
+    }
+  } else {
+    consecutiveOk = 0;
+    setOvalState('red', buildHint(slot, pose));
+  }
+}
+
+// ── Hint builder — uses nested per-slot thresholds ────────────────────────────
+// Axes per slot:
+//   front / smile : yaw_max + pitch_max + roll_max
+//   left          : yaw_min, yaw_max, roll_max  (no pitch)
+//   right         : yaw_min, yaw_max, roll_max  (no pitch, yaw is negative)
+
+function buildHint(slot, pose) {
+  const t = pose.thresholds[slot];
+
+  if (slot === 'front' || slot === 'smile') {
+    if (Math.abs(pose.yaw)   > t.yaw_max)   return `Face forward (yaw=${pose.yaw.toFixed(1)}°, max ±${t.yaw_max}°)`;
+    if (Math.abs(pose.pitch) > t.pitch_max) return `Level your head (pitch=${pose.pitch.toFixed(1)}°, max ±${t.pitch_max}°)`;
+    if (Math.abs(pose.roll)  > t.roll_max)  return `Don't tilt (roll=${pose.roll.toFixed(1)}°, max ±${t.roll_max}°)`;
+    return slot === 'smile' ? 'Now smile naturally 😊' : ANGLE_INSTRUCTIONS[slot];
+  }
+
+  if (slot === 'left') {
+    if (Math.abs(pose.roll) > t.roll_max) return `Don't tilt (roll=${pose.roll.toFixed(1)}°, max ±${t.roll_max}°)`;
+    if (pose.yaw < t.yaw_min)  return `Turn further LEFT (yaw=${pose.yaw.toFixed(1)}°, need ≥${t.yaw_min}°)`;
+    if (pose.yaw > t.yaw_max)  return `Turn back slightly (yaw=${pose.yaw.toFixed(1)}°, max ${t.yaw_max}°)`;
+  }
+
+  if (slot === 'right') {
+    if (Math.abs(pose.roll) > t.roll_max)   return `Don't tilt (roll=${pose.roll.toFixed(1)}°, max ±${t.roll_max}°)`;
+    if (pose.yaw > -t.yaw_min) return `Turn further RIGHT (yaw=${pose.yaw.toFixed(1)}°, need ≤-${t.yaw_min}°)`;
+    if (pose.yaw < -t.yaw_max) return `Turn back slightly (yaw=${pose.yaw.toFixed(1)}°, max -${t.yaw_max}°)`;
+  }
+
+  return ANGLE_INSTRUCTIONS[slot];
+}
+
+// ── Capture ───────────────────────────────────────────────────────────────────
+function captureSnap() {
+  if (selfieBlobs.length >= 4) return;
+  if (currentOvalState !== 'green') {
+    showError('Wait until the oval turns GREEN before capturing.');
+    return;
+  }
+
+  const video  = document.getElementById('camera-feed');
   const canvas = document.getElementById('snap-canvas');
-  canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+  canvas.width  = video.videoWidth  || 640;
+  canvas.height = video.videoHeight || 480;
   canvas.getContext('2d').drawImage(video, 0, 0);
+
   canvas.toBlob(blob => {
-    selfieBlobs.push({ blob, angle: ANGLES[currentAngle] });
-    currentAngle = Math.min(currentAngle+1, ANGLES.length-1);
-    renderSelfiePreviews(); updateAnglePills(); updateStepStates();
-    if (selfieBlobs.length >= 5) stopCamera();
+    const angleName = ANGLES[currentAngle];
+    selfieBlobs.push({ blob, angle: angleName });
+    currentAngle++;
+    consecutiveOk = 0;
+    renderSelfiePreviews();
+    updateAngleSteps();
+
+    if (selfieBlobs.length >= 4) {
+      stopCamera();
+      updateStepStates();
+      return;
+    }
+
+    setOvalState('gray', ANGLE_INSTRUCTIONS[ANGLES[currentAngle]]);
+    document.getElementById('snap-btn').disabled = true;
+    updateStepStates();
   }, 'image/jpeg', 0.92);
 }
 
-function updateAnglePills() {
-  document.querySelectorAll('.angle-pill').forEach((pill, i) => {
-    pill.className = 'angle-pill';
-    if (i < selfieBlobs.length) pill.classList.add('captured');
-    else if (i === currentAngle && stream) pill.classList.add('current');
+function updateAngleSteps() {
+  ANGLES.forEach((_, i) => {
+    const el = document.getElementById(`astep-${i}`);
+    if (!el) return;
+    if      (i < selfieBlobs.length)          el.className = 'angle-step done';
+    else if (i === currentAngle && stream)    el.className = 'angle-step current';
+    else                                       el.className = 'angle-step';
   });
-  const hint = document.getElementById('camera-hint');
-  if (hint) hint.textContent = `align your face · ${ANGLES[currentAngle]||'done'}`;
 }
 
 function renderSelfiePreviews() {
   const grid = document.getElementById('selfie-preview');
   grid.innerHTML = '';
-  selfieBlobs.forEach((s,i) => {
+  selfieBlobs.forEach((s, i) => {
     const item = document.createElement('div');
     item.className = 'preview-item';
-    item.innerHTML = `<img src="${URL.createObjectURL(s.blob)}"/><button class="remove-btn" onclick="removeSelfie(${i})">✕</button><div style="position:absolute;bottom:4px;left:4px;background:rgba(0,0,0,0.7);color:#fff;font-size:10px;padding:2px 5px;border-radius:3px;font-family:var(--mono)">${s.angle}</div>`;
+    item.innerHTML = `
+      <img src="${URL.createObjectURL(s.blob)}"/>
+      <button class="remove-btn" onclick="removeSelfie(${i})">✕</button>
+      <div class="angle-label">${s.angle}</div>`;
     grid.appendChild(item);
   });
   document.getElementById('selfie-count').style.display = selfieBlobs.length ? 'block' : 'none';
   document.getElementById('selfie-num').textContent = selfieBlobs.length;
 }
 
-function removeSelfie(i) { selfieBlobs.splice(i,1); currentAngle=Math.max(0,currentAngle-1); renderSelfiePreviews(); updateAnglePills(); updateStepStates(); }
+function removeSelfie(i) {
+  selfieBlobs.splice(i, 1);
+  currentAngle = selfieBlobs.length;
+  renderSelfiePreviews();
+  updateAngleSteps();
+  updateStepStates();
+}
 
+// ── Step state ────────────────────────────────────────────────────────────────
 function updateStepStates() {
-  const hasRef = refFiles.length >= 1, hasSelfies = selfieBlobs.length >= 2;
-  document.getElementById('step1').className = 'step'+(hasRef?' done':' active');
-  document.getElementById('step2').className = 'step'+(hasSelfies?' done':hasRef?' active':'');
-  document.getElementById('step3').className = 'step'+(hasRef&&hasSelfies?' active':'');
+  const hasRef     = refFiles.length >= 1;
+  const hasSelfies = selfieBlobs.length === 4;
+  document.getElementById('step1').className = 'step' + (hasRef ? ' done' : ' active');
+  document.getElementById('step2').className = 'step' + (hasSelfies ? ' done' : hasRef ? ' active' : '');
+  document.getElementById('step3').className = 'step' + (hasRef && hasSelfies ? ' active' : '');
   document.getElementById('num1').textContent = hasRef ? '✓' : '1';
   document.getElementById('num2').textContent = hasSelfies ? '✓' : '2';
   document.getElementById('verify-btn').disabled = !(hasRef && hasSelfies);
 }
 
+// ── Verification call ─────────────────────────────────────────────────────────
 async function runVerification() {
   hideError();
-  document.getElementById('result-box').style.display='none';
-  document.getElementById('loading-bar').className='loading-bar show';
-  document.getElementById('submit-status').textContent='Sending to API...';
-  document.getElementById('verify-btn').disabled=true;
-  const apiUrl = document.getElementById('api-url').value.trim();
+  document.getElementById('result-box').style.display = 'none';
+  document.getElementById('loading-bar').className = 'loading-bar show';
+  document.getElementById('submit-status').textContent = 'Sending to API...';
+  document.getElementById('verify-btn').disabled = true;
+
+  const apiUrl   = document.getElementById('api-url').value.trim();
   const formData = new FormData();
-  refFiles.forEach(f => formData.append('reference_images', f, f.name));
-  console.log(refFiles,"refFiles")
-  selfieBlobs.forEach((s,i) => formData.append('selfie_images', s.blob, `selfie_${s.angle}_${i}.jpg`));
+  refFiles.forEach(f   => formData.append('reference_images', f, f.name));
+  selfieBlobs.forEach((s, i) => formData.append('selfie_images', s.blob, `selfie_${s.angle}_${i}.jpg`));
+
   try {
-    const res = await fetch(apiUrl, { method:'POST', body:formData });
+    const res  = await fetch(apiUrl, { method: 'POST', body: formData });
     const data = await res.json();
-    document.getElementById('loading-bar').className='loading-bar';
-    document.getElementById('submit-status').textContent='';
-    if (!res.ok) { showError(data.detail||JSON.stringify(data)); return; }
+    document.getElementById('loading-bar').className = 'loading-bar';
+    document.getElementById('submit-status').textContent = '';
+    if (!res.ok) { showError(data.detail || JSON.stringify(data)); return; }
     showResult(data);
   } catch(err) {
-    document.getElementById('loading-bar').className='loading-bar';
-    document.getElementById('submit-status').textContent='';
-    showError(`Could not reach the API at "${apiUrl}". Make sure your FastAPI server is running on localhost:8000`);
-  } finally { document.getElementById('verify-btn').disabled=false; }
+    document.getElementById('loading-bar').className = 'loading-bar';
+    document.getElementById('submit-status').textContent = '';
+    showError(`Could not reach the API at "${apiUrl}".`);
+  } finally {
+    document.getElementById('verify-btn').disabled = false;
+  }
 }
 
 function showResult(data) {
-  const box = document.getElementById('result-box');
-  const isVerified = data.status==='verified';
-  box.className='result-box '+(isVerified?'verified':'rejected');
-  box.style.display='block';
-  document.getElementById('result-verdict').textContent = isVerified?'Identity verified':'Identity rejected';
-  document.getElementById('result-msg').textContent = data.message;
-  document.getElementById('stat-confidence').textContent = (data.confidence_score*100).toFixed(1)+'%';
-  document.getElementById('stat-pairs').textContent = `${data.matched_pairs} / ${data.total_pairs}`;
-  document.getElementById('stat-ratio').textContent = (data.match_ratio*100).toFixed(0)+'%';
+  const box        = document.getElementById('result-box');
+  const isVerified = data.status === 'verified';
+  box.className    = 'result-box ' + (isVerified ? 'verified' : 'rejected');
+  box.style.display = 'block';
+  document.getElementById('result-verdict').textContent     = isVerified ? 'Identity verified' : 'Identity rejected';
+  document.getElementById('result-msg').textContent         = data.message;
+  document.getElementById('stat-confidence').textContent    = (data.confidence_score * 100).toFixed(1) + '%';
+  document.getElementById('stat-pairs').textContent         = `${data.matched_pairs} / ${data.total_pairs}`;
+  document.getElementById('stat-ratio').textContent         = (data.match_ratio * 100).toFixed(0) + '%';
   const pairList = document.getElementById('pair-list');
-  pairList.innerHTML='';
+  pairList.innerHTML = '';
   data.pair_results.forEach(p => {
+    const angleLabel = ANGLES[p.selfie_index] || p.selfie_index;
     const row = document.createElement('div');
-    row.className='pair-row';
-    row.innerHTML=`<span class="pair-badge ${p.is_match?'match':'no-match'}">${p.is_match?'match':'no match'}</span><span class="pair-info">ref[${p.reference_index}] vs selfie[${p.selfie_index}]</span><span class="pair-score">${(p.confidence_score*100).toFixed(1)}% · dist ${p.distance.toFixed(3)}</span>`;
+    row.className = 'pair-row';
+    row.innerHTML = `
+      <span class="pair-badge ${p.is_match ? 'match' : 'no-match'}">${p.is_match ? 'match' : 'no match'}</span>
+      <span class="pair-info">ref[${p.reference_index}] vs ${angleLabel} selfie</span>
+      <span class="pair-score">${(p.confidence_score * 100).toFixed(1)}% · dist ${p.distance.toFixed(3)}</span>`;
     pairList.appendChild(row);
   });
-  box.scrollIntoView({ behavior:'smooth', block:'nearest' });
+  box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
-function showError(msg) { const b=document.getElementById('error-box'); b.textContent='Error: '+msg; b.style.display='block'; }
-function hideError() { document.getElementById('error-box').style.display='none'; }
+function showError(msg) {
+  const b = document.getElementById('error-box');
+  b.textContent  = 'Error: ' + msg;
+  b.style.display = 'block';
+}
+function hideError() { document.getElementById('error-box').style.display = 'none'; }
 
 function resetAll() {
-  refFiles=[]; selfieBlobs=[]; currentAngle=0;
-  stopCamera(); renderRefPreviews(); renderSelfiePreviews(); updateAnglePills(); updateStepStates();
-  document.getElementById('result-box').style.display='none';
+  refFiles = []; selfieBlobs = []; currentAngle = 0; consecutiveOk = 0;
+  stopCamera();
+  renderRefPreviews(); renderSelfiePreviews(); updateAngleSteps(); updateStepStates();
+  document.getElementById('result-box').style.display = 'none';
   hideError();
-  document.getElementById('ref-input').value='';
-  document.getElementById('submit-status').textContent='';
+  document.getElementById('ref-input').value        = '';
+  document.getElementById('submit-status').textContent = '';
+  setOvalState('gray', 'position your face inside the oval');
+  ANGLES.forEach((_, i) => {
+    const el = document.getElementById(`astep-${i}`);
+    if (el) el.className = i === 0 ? 'angle-step current' : 'angle-step';
+  });
 }
 
 updateStepStates();
