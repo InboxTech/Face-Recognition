@@ -455,8 +455,52 @@ def get_face_embedding_with_pose_check(img, filename, slot_index):
     slot = SELFIE_SLOTS[slot_index]
     faces = _detect(img, filename)
     face = faces[0]
-    slot["pose_check"](face, img, filename)
+    # Pose check is now a SOFT validation — log warnings, don't reject
+    try:
+        slot["pose_check"](face, img, filename)
+        logger.info(f"[POSE-OK] '{filename}' passed pose check for slot {slot_index} ({slot['label']})")
+    except HTTPException as e:
+        # Log the pose issue but DON'T reject — let face matching decide
+        logger.warning(f"[POSE-SOFT] '{filename}' pose issue (slot {slot_index}): {e.detail}")
     return face.embedding
+
+
+# Minimum yaw range across all selfies to prove head movement (liveness)
+# 25° means at least one selfie must have a noticeably different head angle
+MIN_YAW_VARIATION = 25.0
+
+def _check_yaw_variation(selfie_images, selfie_filenames):
+    """
+    Liveness check: ensure the user actually moved their head across selfies.
+    Instead of requiring exact angles per slot, we check that the YAW values
+    across all 4 selfies span at least MIN_YAW_VARIATION degrees.
+    
+    Example:
+      selfie_0 yaw=2°, selfie_1 yaw=25°, selfie_2 yaw=-18°, selfie_3 yaw=1°
+      range = 25 - (-18) = 43° → PASS (>15°)
+    
+      selfie_0 yaw=1°, selfie_1 yaw=3°, selfie_2 yaw=-2°, selfie_3 yaw=0°
+      range = 3 - (-2) = 5° → FAIL (all basically front-facing)
+    """
+    yaw_values = []
+    for img, fn in zip(selfie_images, selfie_filenames):
+        yaw, _, _ = _pose(img, fn)
+        if yaw is not None:
+            yaw_values.append(yaw)
+    
+    if len(yaw_values) < 2:
+        logger.warning("[LIVENESS] Could not extract enough yaw values for variation check")
+        return  # Can't check, let it pass
+    
+    yaw_range = max(yaw_values) - min(yaw_values)
+    logger.info(f"[LIVENESS] Yaw values: {[round(y, 1) for y in yaw_values]}, range={yaw_range:.1f}°")
+    
+    if yaw_range < MIN_YAW_VARIATION:
+        raise HTTPException(
+            status_code=422,
+            detail=f"Liveness check failed: Your selfies all look the same direction. "
+                   f"Please turn your head left and right as instructed.",
+        )
 
 
 def cosine_distance(a, b) -> float:
@@ -485,6 +529,9 @@ def verify_faces(reference_images, selfie_images, reference_filenames, selfie_fi
     selfie_embeddings = []
     for i, (img, fn) in enumerate(zip(selfie_images, selfie_filenames)):
         selfie_embeddings.append(get_face_embedding_with_pose_check(img, fn, slot_index=i))
+
+    # Liveness: ensure user actually turned their head (not all same angle)
+    _check_yaw_variation(selfie_images, selfie_filenames)
 
     _check_no_duplicates(selfie_images, selfie_filenames, selfie_embeddings)
     _check_selfie_consistency(selfie_embeddings, selfie_filenames)

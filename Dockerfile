@@ -6,6 +6,7 @@ ENV PYTHONUNBUFFERED=1
 
 # Install only required system deps (minimal)
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
     libgl1 \
     libglib2.0-0 \
     libsm6 \
